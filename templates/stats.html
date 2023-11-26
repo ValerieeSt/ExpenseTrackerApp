@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статистика расходов</title>
+</head>
+<body>
+    <h1>Статистика расходов</h1>
+
+    <p>Суммарные расходы: ${{ total_expenses }}</p>
+    <p>Средний расход: ${{ average_expense }}</p>
+
+
+    <img src="data:image/png;base64,{{ img_base64 }}" alt="Expenses by Category">
+
+    <a href="{{ url_for('index') }}">Назад к расходам</a>
+</body>
+</html>
