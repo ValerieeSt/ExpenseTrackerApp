@@ -28,18 +28,17 @@
     <button type="submit">Добавить</button>
 </form>
 
-    <h2>Расходы:</h2>
+  <h2>Расходы:</h2>
     <ul>
         {% for expense in expenses.items %}
             <li>
-                {{ expense.description }} - ${{ expense.amount }} - {{ expense.category.name }}
+                {{ expense.description }} - {{ expense.amount }} - {{ expense.category.name }} - {{ expense.date.strftime('%Y-%m-%d') }}
                 <form action="{{ url_for('edit_expense', expense_id=expense.id) }}" method="get" style="display: inline;">
                     <button type="submit">Редактировать</button>
                 </form>
             </li>
         {% endfor %}
     </ul>
-
     <a href="{{ url_for('stats') }}">Статистика</a>
 
     <script>

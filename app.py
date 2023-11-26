@@ -8,6 +8,7 @@ import io
 import base64
 from decouple import config
 from models import db, Category, Expense
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config('DATABASE_URI')
@@ -33,6 +34,8 @@ def add_expense():
         description = request.form['description']
         amount = float(request.form['amount'])
         category_name = request.form['category']
+        date_str = request.form['date']
+        date = datetime.strptime(date_str, '%Y-%m-%d')  # Преобразование строки в объект datetime
 
         category = Category.query.filter_by(name=category_name).first()
         if not category:
@@ -40,7 +43,7 @@ def add_expense():
             db.session.add(category)
             db.session.commit()
 
-        new_expense = Expense(description=description, amount=amount, category=category)
+        new_expense = Expense(description=description, amount=amount, category=category, date=date)
         db.session.add(new_expense)
         db.session.commit()
 
@@ -49,7 +52,6 @@ def add_expense():
         flash('Invalid amount. Please enter a valid number.', 'error')
 
     return redirect(url_for('index'))
-
 @app.route('/edit/<int:expense_id>', methods=['GET', 'POST'])
 def edit_expense(expense_id):
     expense = Expense.query.get(expense_id)
