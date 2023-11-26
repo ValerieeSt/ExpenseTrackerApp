@@ -23,36 +23,37 @@
     <label for="date">Дата:</label>
     <input type="date" id="date" name="date" required><br>
 
-
-
     <button type="submit">Добавить</button>
-</form>
+   </form>
 
-  <h2>Расходы:</h2>
-    <ul>
-        {% for expense in expenses.items %}
-            <li>
-                {{ expense.description }} - {{ expense.amount }} - {{ expense.category.name }} - {{ expense.date.strftime('%Y-%m-%d') }}
-                <form action="{{ url_for('edit_expense', expense_id=expense.id) }}" method="get" style="display: inline;">
-                    <button type="submit">Редактировать</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
-    <a href="{{ url_for('stats') }}">Статистика</a>
+   <h2>Расходы:</h2>
+   <ul>
+       {% for expense in expenses.items %}
+           <li>
+               {{ expense.description }} - {{ expense.amount }} - {{ expense.category.name }} - {{ expense.date.strftime('%Y-%m-%d') }}
+               <form action="{{ url_for('edit_expense', expense_id=expense.id) }}" method="get" style="display: inline;">
+                   <button type="submit">Редактировать</button>
+               </form>
+               <form action="{{ url_for('delete_expense', expense_id=expense.id) }}" method="post" style="display: inline;">
+                   <button type="submit">Удалить</button>
+               </form>
+           </li>
+       {% endfor %}
+   </ul>
+   <a href="{{ url_for('stats') }}">Статистика</a>
 
-    <script>
-        fetch('/categories')
-            .then(response => response.json())
-            .then(data => {
-                const categoryDropdown = document.getElementById('category');
-                data.categories.forEach(category => {
-                    const option = document.createElement('option');
-                    option.value = category;
-                    option.text = category;
-                    categoryDropdown.add(option);
-                });
-            });
-    </script>
+   <script>
+       fetch('/categories')
+           .then(response => response.json())
+           .then(data => {
+               const categoryDropdown = document.getElementById('category');
+               data.categories.forEach(category => {
+                   const option = document.createElement('option');
+                   option.value = category;
+                   option.text = category;
+                   categoryDropdown.add(option);
+               });
+           });
+   </script>
 </body>
 </html>

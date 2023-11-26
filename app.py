@@ -79,13 +79,7 @@ def edit_expense(expense_id):
 
     return render_template('edit.html', expense=expense)
 
-@app.route('/delete/<int:expense_id>')
-def delete_expense(expense_id):
-    expense = Expense.query.get(expense_id)
-    db.session.delete(expense)
-    db.session.commit()
-    flash('Expense deleted successfully!', 'success')
-    return redirect(url_for('index'))
+
 
 @app.route('/stats')
 def stats():
@@ -117,6 +111,18 @@ def get_categories():
     categories = Category.query.all()
     category_names = [category.name for category in categories]
     return {'categories': category_names}
+
+@app.route('/delete/<int:expense_id>', methods=['POST'])
+def delete_expense(expense_id):
+    expense = Expense.query.get(expense_id)
+
+    if not expense:
+        flash('Expense not found!', 'error')
+    else:
+        expense.delete()
+        flash('Expense deleted successfully!', 'success')
+
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
