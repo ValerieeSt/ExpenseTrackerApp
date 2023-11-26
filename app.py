@@ -89,17 +89,20 @@ def delete_expense(expense_id):
 
 @app.route('/stats')
 def stats():
-    total_expenses = db.session.query(db.func.sum(Expense.amount)).scalar() or 0
-    average_expense = db.session.query(db.func.avg(Expense.amount)).scalar() or 0
+    selected_month = request.args.get('month', type=int, default=datetime.now().month)
+    selected_year = request.args.get('year', type=int, default=datetime.now().year)
+
+    total_expenses = db.session.query(db.func.sum(Expense.amount)).filter(db.func.extract('month', Expense.date) == selected_month, db.func.extract('year', Expense.date) == selected_year).scalar() or 0
+
+    average_expense = db.session.query(db.func.avg(Expense.amount)).filter(db.func.extract('month', Expense.date) == selected_month, db.func.extract('year', Expense.date) == selected_year).scalar() or 0
 
     categories = Category.query.all()
-    category_expenses = [db.session.query(db.func.sum(Expense.amount)).filter_by(category=category).scalar() or 0 for category in categories]
+    category_expenses = [db.session.query(db.func.sum(Expense.amount)).filter(db.func.extract('month', Expense.date) == selected_month, db.func.extract('year', Expense.date) == selected_year, Expense.category == category).scalar() or 0 for category in categories]
 
     fig, ax = plt.subplots(figsize=(16, 6))
-
     ax.barh([category.name for category in categories], category_expenses)
     ax.set_xlabel('Total Expenses')
-    ax.set_title('Expenses by Category')
+    ax.set_title(f'Expenses by Category - {selected_month}/{selected_year}')
 
     img = io.BytesIO()
     plt.savefig(img, format='png')
@@ -107,7 +110,7 @@ def stats():
 
     img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
 
-    return render_template('stats.html', total_expenses=total_expenses, average_expense=average_expense, img_base64=img_base64)
+    return render_template('stats.html', total_expenses=total_expenses, average_expense=average_expense, img_base64=img_base64, selected_month=selected_month, selected_year=selected_year, datetime=datetime)
 
 @app.route('/categories')
 def get_categories():
