@@ -12,11 +12,13 @@
         <label for="description">Описание:</label>
         <input type="text" id="description" name="description" required><br>
 
-        <label for="amount">Количество:</label>
+        <label for="amount">Сумма:</label>
         <input type="number" id="amount" name="amount" step="0.01" required><br>
 
         <label for="category">Категория:</label>
-        <input type="text" id="category" name="category" required><br>
+        <select id="category" name="category" required>
+            <option value="" disabled selected>Выберите категорию</option>
+        </select><br>
 
         <button type="submit">Добавить</button>
     </form>
@@ -26,7 +28,6 @@
         {% for expense in expenses.items %}
             <li>
                 {{ expense.description }} - ${{ expense.amount }} - {{ expense.category.name }}
-                <!-- Форма для редактирования -->
                 <form action="{{ url_for('edit_expense', expense_id=expense.id) }}" method="get" style="display: inline;">
                     <button type="submit">Редактировать</button>
                 </form>
@@ -36,5 +37,18 @@
 
     <a href="{{ url_for('stats') }}">Статистика</a>
 
+    <script>
+        fetch('/categories')
+            .then(response => response.json())
+            .then(data => {
+                const categoryDropdown = document.getElementById('category');
+                data.categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.text = category;
+                    categoryDropdown.add(option);
+                });
+            });
+    </script>
 </body>
 </html>

@@ -7,27 +7,16 @@ import matplotlib.pyplot as plt
 import io
 import base64
 from decouple import config
+from models import db, Category, Expense
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config('DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'sssecretkey'
-db = SQLAlchemy(app)
+db.init_app(app)
 migrate = Migrate(app, db)
 
-class Category(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-
-class Expense(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(255), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)  # Внешний ключ для связи с категорией
-    category = db.relationship('Category', backref=db.backref('expenses', lazy=True))
-
-    def __repr__(self):
-        return f"<Expense {self.description}>"
+from models import Category, Expense
 
 with app.app_context():
     db.create_all()
@@ -69,7 +58,15 @@ def edit_expense(expense_id):
         try:
             expense.description = request.form['description']
             expense.amount = float(request.form['amount'])
-            expense.category = request.form['category']
+            category_name = request.form['category']
+
+            category = Category.query.filter_by(name=category_name).first()
+            if not category:
+                category = Category(name=category_name)
+                db.session.add(category)
+                db.session.commit()
+
+            expense.category = category
 
             db.session.commit()
             flash('Expense updated successfully!', 'success')
@@ -96,9 +93,10 @@ def stats():
     categories = Category.query.all()
     category_expenses = [db.session.query(db.func.sum(Expense.amount)).filter_by(category=category).scalar() or 0 for category in categories]
 
-    fig, ax = plt.subplots()
-    ax.bar([category.name for category in categories], category_expenses)
-    ax.set_ylabel('Total Expenses')
+    fig, ax = plt.subplots(figsize=(16, 6))
+
+    ax.barh([category.name for category in categories], category_expenses)
+    ax.set_xlabel('Total Expenses')
     ax.set_title('Expenses by Category')
 
     img = io.BytesIO()
@@ -108,6 +106,12 @@ def stats():
     img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
 
     return render_template('stats.html', total_expenses=total_expenses, average_expense=average_expense, img_base64=img_base64)
+
+@app.route('/categories')
+def get_categories():
+    categories = Category.query.all()
+    category_names = [category.name for category in categories]
+    return {'categories': category_names}
 
 if __name__ == '__main__':
     app.run(debug=True)
