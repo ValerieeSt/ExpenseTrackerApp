@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,28 +11,33 @@
     <h1>Статистика расходов за {{ selected_month }}/{{ selected_year }}</h1>
 
     <form action="{{ url_for('stats') }}" method="get">
-       <label for="month">Выберите месяц:</label>
-       <select id="month" name="month">
-           {% for i in range(1, 13) %}
-               <option value="{{ i }}" {% if i == selected_month %} selected {% endif %}>{{ i }}</option>
-           {% endfor %}
-       </select>
+        <label for="month">Выберите месяц:</label>
+        <select id="month" name="month">
+            {% for i in range(1, 13) %}
+                <option value="{{ i }}" {% if i == selected_month %} selected {% endif %}>{{ i }}</option>
+            {% endfor %}
+        </select>
 
-       <label for="year">Выберите год:</label>
-       <select id="year" name="year">
-           {% for i in range(2020, datetime.now().year + 1) %}
-               <option value="{{ i }}" {% if i == selected_year %} selected {% endif %}>{{ i }}</option>
-           {% endfor %}
-       </select>
+        <label for="year">Выберите год:</label>
+        <select id="year" name="year">
+            {% for i in range(2020, datetime.now().year + 1) %}
+                <option value="{{ i }}" {% if i == selected_year %} selected {% endif %}>{{ i }}</option>
+            {% endfor %}
+        </select>
 
-       <button type="submit">Показать статистику</button>
-   </form>
+        <button type="submit">Показать статистику</button>
+    </form>
 
     <p>Суммарные расходы: {{ total_expenses }}</p>
     <p>Средний расход: {{ average_expense }}</p>
 
-    <img src="data:image/png;base64,{{ img_base64 }}" alt="Expenses by Category">
+    {% if img_base64 %}
+        <img src="data:image/png;base64,{{ img_base64 }}" alt="Expenses by Category">
+    {% else %}
+        <p>Нет данных для отображения графика.</p>
+    {% endif %}
 
     <a href="{{ url_for('index') }}">Назад к расходам</a>
 </body>
+
 </html>

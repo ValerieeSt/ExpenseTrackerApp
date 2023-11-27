@@ -1,14 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import io
-import base64
 from decouple import config
 from models import db, Category, Expense
 from datetime import datetime
+import base64
+from io import BytesIO
+import matplotlib.pyplot as plt
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config('DATABASE_URI')
@@ -125,11 +123,13 @@ def stats():
     ax.set_xlabel('Total Expenses')
     ax.set_title(f'Expenses by Category - {selected_month}/{selected_year}')
 
-    img = io.BytesIO()
+    img = BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
 
     img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+
+    plt.close()
 
     return render_template('stats.html', total_expenses=total_expenses, average_expense=average_expense, img_base64=img_base64, selected_month=selected_month, selected_year=selected_year, datetime=datetime)
 
