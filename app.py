@@ -119,8 +119,11 @@ def delete_expense(expense_id):
     if not expense:
         flash('Expense not found!', 'error')
     else:
-        expense.delete()
-        flash('Expense deleted successfully!', 'success')
+        if request.form.get('confirm_delete') == 'yes':
+            expense.delete()
+            flash('Expense deleted successfully!', 'success')
+        else:
+            flash('Deletion canceled.', 'info')
 
     return redirect(url_for('index'))
 

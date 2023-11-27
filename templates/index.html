@@ -34,7 +34,7 @@
                <form action="{{ url_for('edit_expense', expense_id=expense.id) }}" method="get" style="display: inline;">
                    <button type="submit">Редактировать</button>
                </form>
-               <form action="{{ url_for('delete_expense', expense_id=expense.id) }}" method="post" style="display: inline;">
+               <form action="{{ url_for('delete_expense', expense_id=expense.id) }}" method="post" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите удалить?');">
                    <button type="submit">Удалить</button>
                </form>
            </li>
