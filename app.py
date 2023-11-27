@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -35,7 +35,7 @@ def add_expense():
         amount = float(request.form['amount'])
         category_name = request.form['category']
         date_str = request.form['date']
-        date = datetime.strptime(date_str, '%Y-%m-%d')  # Преобразование строки в объект datetime
+        date = datetime.strptime(date_str, '%Y-%m-%d')
 
         category = Category.query.filter_by(name=category_name).first()
         if not category:
@@ -52,6 +52,8 @@ def add_expense():
         flash('Invalid amount. Please enter a valid number.', 'error')
 
     return redirect(url_for('index'))
+
+
 @app.route('/edit/<int:expense_id>', methods=['GET', 'POST'])
 def edit_expense(expense_id):
     expense = Expense.query.get(expense_id)
@@ -117,15 +119,19 @@ def delete_expense(expense_id):
     expense = Expense.query.get(expense_id)
 
     if not expense:
-        flash('Expense not found!', 'error')
-    else:
-        if request.form.get('confirm_delete') == 'yes':
-            expense.delete()
-            flash('Expense deleted successfully!', 'success')
-        else:
-            flash('Deletion canceled.', 'info')
+        return jsonify({'status': 'error', 'message': 'Expense not found!'}), 404
 
-    return redirect(url_for('index'))
+    if request.form.get('confirm_delete') == 'yes':
+        try:
+            db.session.delete(expense)
+            db.session.commit()
+            return jsonify({'status': 'success', 'message': 'Expense deleted successfully!'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'status': 'error', 'message': f'An error occurred while deleting the expense: {str(e)}'}), 500
+    else:
+        return jsonify({'status': 'info', 'message': 'Deletion canceled.'})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
