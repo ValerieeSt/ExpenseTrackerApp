@@ -25,8 +25,33 @@ with app.app_context():
 @app.route('/')
 def index():
     page = request.args.get('page', 1, type=int)
-    expenses = Expense.query.paginate(page=page, per_page=5)
-    return render_template('index.html', expenses=expenses)
+    category_filter = request.args.get('category', type=str)
+    sort_by = request.args.get('sort_by', 'date', type=str)
+    sort_order = request.args.get('sort_order', 'desc', type=str)
+
+    expenses_query = Expense.query
+
+    if category_filter:
+        expenses_query = expenses_query.filter(Expense.category.has(name=category_filter))
+
+    if sort_by == 'amount':
+        if sort_order == 'asc':
+            expenses_query = expenses_query.order_by(Expense.amount)
+        else:
+            expenses_query = expenses_query.order_by(Expense.amount.desc())
+    elif sort_by == 'description':
+        if sort_order == 'asc':
+            expenses_query = expenses_query.order_by(Expense.description)
+        else:
+            expenses_query = expenses_query.order_by(Expense.description.desc())
+    else:
+        expenses_query = expenses_query.order_by(Expense.date.desc())
+
+    expenses = expenses_query.paginate(page=page, per_page=20)
+
+    categories = Category.query.all()
+
+    return render_template('index.html', expenses=expenses, categories=categories, category_filter=category_filter, sort_by=sort_by, sort_order=sort_order)
 
 @app.route('/add', methods=['POST'])
 def add_expense():

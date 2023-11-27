@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Учет расходов</title>
-
 </head>
 <body>
     <h1>Учет расходов</h1>
@@ -27,6 +26,31 @@
         <button type="submit">Добавить</button>
     </form>
 
+    <form action="{{ url_for('index') }}" method="get">
+        <label for="category-filter">Фильтр по категории:</label>
+        <select id="category-filter" name="category">
+            <option value="">Все категории</option>
+            {% for category in categories %}
+                <option value="{{ category.name }}" {% if category_filter == category.name %} selected {% endif %}>{{ category.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="sort-by">Сортировать по:</label>
+        <select id="sort-by" name="sort_by">
+            <option value="date" {% if sort_by =='date' %} selected {% endif %}>Дата</option>
+            <option value="amount" {% if sort_by =='amount' %} selected {% endif %}>Сумма</option>
+            <option value="description" {% if sort_by =='description' %} selected {% endif %}>Описание</option>
+        </select>
+
+        <label for="sort-order">Порядок сортировки:</label>
+        <select id="sort-order" name="sort_order">
+            <option value="asc" {% if sort_order =='asc' %} selected {% endif %}>По возрастанию</option>
+            <option value="desc" {% if sort_order =='desc' %} selected {% endif %}>По убыванию</option>
+        </select>
+
+        <button type="submit">Применить</button>
+    </form>
+
     <h2>Расходы:</h2>
     <ul>
         {% for expense in expenses.items %}
@@ -39,6 +63,15 @@
             </li>
         {% endfor %}
     </ul>
+
+    {% if expenses.has_prev %}
+        <a href="{{ url_for('index', page=expenses.prev_num) }}">« Назад</a>
+    {% endif %}
+    Страница {{ expenses.page }} из {{ expenses.pages }}
+    {% if expenses.has_next %}
+        <a href="{{ url_for('index', page=expenses.next_num) }}">Вперед »</a>
+    {% endif %}
+
     <a href="{{ url_for('stats') }}">Статистика</a>
 
     <div id="confirmModal" class="confirm-modal" style="display: none;">
@@ -48,6 +81,7 @@
             <button onclick="cancelDelete()">Отмена</button>
         </div>
     </div>
+
 
     <script>
      fetch('/categories')
@@ -61,6 +95,38 @@
             categoryDropdown.add(option);
         });
     });
+
+document.getElementById('addExpenseButton').addEventListener('click', function () {
+    const description = document.getElementById('description').value;
+    const amount = document.getElementById('amount').value;
+    const category = document.getElementById('category').value;
+    const date = document.getElementById('date').value;
+
+    fetch('/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'description': description,
+            'amount': amount,
+            'category': category,
+            'date': date,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.reload();
+        } else {
+            alert(`Ошибка: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Произошла ошибка при добавлении расхода.');
+    });
+});
 
 function deleteExpense(expenseId) {
     if (confirm('Вы уверены, что хотите удалить?')) {
