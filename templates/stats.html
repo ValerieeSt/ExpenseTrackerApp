@@ -4,12 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Статистика расходов</title>
+    <link rel="stylesheet" href="/static/styles.css">
+
 </head>
 
 <body>
-    <h1>Статистика расходов за {{ selected_month }}/{{ selected_year }}</h1>
 
+    <header>
+    <div class="header-links">
+        <a href="{{ url_for('index') }}">Назад к расходам</a>
+    </div>
+    <h1>Статистика</h1>
+    <div class="header-links">
+        <a href="{{ url_for('stats') }}"></a>
+    </div>
+</header>
+
+    <div class="container">
+    <div class="stats_form">
     <form action="{{ url_for('stats') }}" method="get">
         <label for="month">Выберите месяц:</label>
         <select id="month" name="month">
@@ -27,17 +39,21 @@
 
         <button type="submit">Показать статистику</button>
     </form>
+    </div>
+        <div class="sum_stats">
+        <p>Суммарные расходы: {{ total_expenses }}</p>
+        <p>Средний расход: {{ average_expense }}</p>
+    </div>
 
-    <p>Суммарные расходы: {{ total_expenses }}</p>
-    <p>Средний расход: {{ average_expense }}</p>
+    <div class="img_stats">
+        {% if img_base64 %}
+            <img src="data:image/png;base64,{{ img_base64 }}" alt="Expenses by Category">
+        {% else %}
+            <p>Нет данных для отображения графика.</p>
+        {% endif %}
+    </div>
 
-    {% if img_base64 %}
-        <img src="data:image/png;base64,{{ img_base64 }}" alt="Expenses by Category">
-    {% else %}
-        <p>Нет данных для отображения графика.</p>
-    {% endif %}
-
-    <a href="{{ url_for('index') }}">Назад к расходам</a>
+    </div>
 </body>
 
 </html>
